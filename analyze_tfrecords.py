@@ -24,6 +24,76 @@ def list_tfrecords_features(file_path, num_records=10):
 # Example usage
 list_tfrecords_features(TFRECORDS_PATH)
 
+
+
+import tensorflow as tf
+import pdb
+
+def get_first_record(file_path, label_name='label', click_count_name='click_count', heatmap_name='heatmap', image_name='image'):
+    # Create a TFRecordDataset
+    raw_dataset = tf.data.TFRecordDataset(file_path)
+
+    # Initialize variables to hold the first record's data
+    first_click_count = None
+    first_label = None
+    first_heatmap = None
+    first_image = None
+
+    # Iterate over the dataset and get the first record
+    for raw_record in raw_dataset.take(1):
+        example = tf.train.Example()
+        example.ParseFromString(raw_record.numpy())
+        
+        # Extract the required features
+        if label_name in example.features.feature:
+            label_feature = example.features.feature[label_name]
+            if label_feature.WhichOneof('kind') == 'int64_list':
+                first_label = label_feature.int64_list.value[0]
+
+        if click_count_name in example.features.feature:
+            click_count_feature = example.features.feature[click_count_name]
+            kind = click_count_feature.WhichOneof('kind')
+            if kind == 'int64_list':
+                first_click_count = list(click_count_feature.int64_list.value)
+            elif kind == 'float_list':
+                first_click_count = list(click_count_feature.float_list.value)
+            elif kind == 'bytes_list':
+                first_click_count = list(click_count_feature.bytes_list.value)
+
+        if heatmap_name in example.features.feature:
+            heatmap_feature = example.features.feature[heatmap_name]
+            kind = heatmap_feature.WhichOneof('kind')
+            if kind == 'int64_list':
+                first_heatmap = list(heatmap_feature.int64_list.value)
+            elif kind == 'float_list':
+                first_heatmap = list(heatmap_feature.float_list.value)
+            elif kind == 'bytes_list':
+                first_heatmap = list(heatmap_feature.bytes_list.value)
+
+        if image_name in example.features.feature:
+            image_feature = example.features.feature[image_name]
+            kind = image_feature.WhichOneof('kind')
+            if kind == 'int64_list':
+                first_image = list(image_feature.int64_list.value)
+            elif kind == 'float_list':
+                first_image = list(image_feature.float_list.value)
+            elif kind == 'bytes_list':
+                first_image = list(image_feature.bytes_list.value)
+        
+        # Break after the first record
+        break
+
+    # Set a breakpoint
+    import pdb; pdb.set_trace()
+
+    return first_label, first_click_count, first_heatmap, first_image
+
+# Example usage
+label, click_count, heatmap, image = get_first_record(TFRECORDS_PATH)
+
+
+
+
 def count_records(file_path):
     # Create a TFRecordDataset
     raw_dataset = tf.data.TFRecordDataset(file_path)
