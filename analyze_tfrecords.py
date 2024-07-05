@@ -60,6 +60,50 @@ def count_label_values(file_path, label_name='label', num_records=10):
     print(f'Total Count: {total_count}')
 
 # Example usage
-count_label_values(TFRECORDS_PATH, label_name='label', num_records=1000)
+count_label_values(TFRECORDS_PATH, label_name='label', num_records=1000000)
 
 
+
+def save_specific_features(file_path, label_name='label', click_count_name='click_count', heatmap_name='heatmap', target_label=225, num_records=1000):
+    # Create a TFRecordDataset
+    raw_dataset = tf.data.TFRecordDataset(file_path)
+    
+    click_count_data = []
+    heatmap_data = []
+
+    # Iterate over the dataset and collect specific feature values
+    for idx, raw_record in enumerate(raw_dataset.take(num_records)):
+        example = tf.train.Example()
+        example.ParseFromString(raw_record.numpy())
+        
+        if label_name in example.features.feature:
+            feature = example.features.feature[label_name]
+            kind = feature.WhichOneof('kind')
+            
+            if kind == 'int64_list' and target_label in feature.int64_list.value:
+                if click_count_name in example.features.feature:
+                    click_count_feature = example.features.feature[click_count_name]
+                    click_count_kind = click_count_feature.WhichOneof('kind')
+                    if click_count_kind == 'int64_list':
+                        click_count_data.append(list(click_count_feature.int64_list.value))
+                    elif click_count_kind == 'float_list':
+                        click_count_data.append(list(click_count_feature.float_list.value))
+                    elif click_count_kind == 'bytes_list':
+                        click_count_data.append(list(click_count_feature.bytes_list.value))
+
+                if heatmap_name in example.features.feature:
+                    heatmap_feature = example.features.feature[heatmap_name]
+                    heatmap_kind = heatmap_feature.WhichOneof('kind')
+                    if heatmap_kind == 'int64_list':
+                        heatmap_data.append(list(heatmap_feature.int64_list.value))
+                    elif heatmap_kind == 'float_list':
+                        heatmap_data.append(list(heatmap_feature.float_list.value))
+                    elif heatmap_kind == 'bytes_list':
+                        heatmap_data.append(list(heatmap_feature.bytes_list.value))
+    
+    return click_count_data, heatmap_data
+
+
+click_count_data, heatmap_data = save_specific_features(TFRECORDS_PATH, label_name='label', click_count_name='click_count', heatmap_name='heatmap', target_label=225, num_records=1000000)
+print("Click Count Data:", click_count_data)
+print("Heatmap Data:", heatmap_data)
