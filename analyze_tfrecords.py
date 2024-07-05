@@ -24,6 +24,23 @@ def list_tfrecords_features(file_path, num_records=10):
 # Example usage
 list_tfrecords_features(TFRECORDS_PATH)
 
+def count_records(file_path):
+    # Create a TFRecordDataset
+    raw_dataset = tf.data.TFRecordDataset(file_path)
+    
+    # Initialize a counter
+    record_count = 0
+
+    # Iterate over the dataset and count the records
+    for _ in raw_dataset:
+        record_count += 1
+    
+    print(f"Total number of records: {record_count}")
+    return record_count
+
+# Example usage
+total_records = count_records(TFRECORDS_PATH)
+
 
 
 def count_label_values(file_path, label_name='label', num_records=10):
