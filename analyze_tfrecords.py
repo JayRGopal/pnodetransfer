@@ -52,8 +52,12 @@ def count_label_values(file_path, label_name='label', num_records=10):
                 label_counts[value] = label_counts.get(value, 0) + 1
     
     print(f"Counts for label '{label_name}':")
+    total_count = 0
     for value, count in label_counts.items():
         print(f"  {value}: {count}")
+        total_count += count
+      
+    print(f'Total Count: {total_count}')
 
 # Example usage
 count_label_values(TFRECORDS_PATH, label_name='label', num_records=1000)
