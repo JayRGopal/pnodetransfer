@@ -25,6 +25,9 @@ def list_tfrecords_features(file_path, num_records=10):
 list_tfrecords_features(TFRECORDS_PATH)
 
 
+tf.enable_eager_execution()
+print(f'Total Records: {sum(1 for _ in tf.data.TFRecordDataset(TFRECORDS_PATH))}')
+
 
 import tensorflow as tf
 import pdb
