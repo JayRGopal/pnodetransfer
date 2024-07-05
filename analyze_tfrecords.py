@@ -1,5 +1,8 @@
 import tensorflow as tf
 
+TFRECORDS_PATH = '/media/data_cifs/clicktionary/clickme_experiment/tf_records/archive/clickme_train.tfrecords'
+
+
 def list_tfrecords_features(file_path, num_records=10):
     # Create a TFRecordDataset
     raw_dataset = tf.data.TFRecordDataset(file_path)
@@ -19,7 +22,40 @@ def list_tfrecords_features(file_path, num_records=10):
         print(f"  {feature}")
 
 # Example usage
-print_tfrecords('/media/data_cifs/clicktionary/clickme_experiment/tf_records/archive/clickme_train.tfrecords')
+list_tfrecords_features(TFRECORDS_PATH)
 
+
+
+def count_label_values(file_path, label_name='label', num_records=10):
+    # Create a TFRecordDataset
+    raw_dataset = tf.data.TFRecordDataset(file_path)
+    
+    label_counts = {}
+
+    # Iterate over the dataset and collect label values
+    for idx, raw_record in enumerate(raw_dataset.take(num_records)):
+        example = tf.train.Example()
+        example.ParseFromString(raw_record.numpy())
+        
+        if label_name in example.features.feature:
+            feature = example.features.feature[label_name]
+            kind = feature.WhichOneof('kind')
+            
+            if kind == 'bytes_list':
+                values = feature.bytes_list.value
+            elif kind == 'float_list':
+                values = feature.float_list.value
+            elif kind == 'int64_list':
+                values = feature.int64_list.value
+
+            for value in values:
+                label_counts[value] = label_counts.get(value, 0) + 1
+    
+    print(f"Counts for label '{label_name}':")
+    for value, count in label_counts.items():
+        print(f"  {value}: {count}")
+
+# Example usage
+count_label_values(TFRECORDS_PATH, label_name='label', num_records=1000)
 
 
